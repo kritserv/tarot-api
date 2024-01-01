@@ -1,0 +1,47 @@
+body {
+   font-family: monospace;
+   margin-left: 0;
+   margin-right: 0;
+   background-color: hsl(228, 58%, 14%);
+   color: hsl(0, 0%, 80%);
+}
+header,
+main, 
+footer {
+  width: 960px;
+  max-width: 95vw;
+  margin: 2rem auto;
+}
+footer {
+  margin-top: 4rem;
+  text-align: right;
+}
+a {
+  text-decoration: none;
+  font-weight: bold;
+  color: hsl(259, 100%, 64%);
+  transition: color 300ms linear;
+}
+a:visited {
+  color: hsl(259, 50%, 64%);
+}
+a:hover {
+  color: hsl(30, 100%, 61%);
+}
+h1 {
+  font-size: 3rem;
+  font-weight: 300;
+  margin-bottom: 0;
+}
+h1,
+h2,
+h3 {
+  font-family: monospace;
+  color: hsl(0, 0%, 80%);
+}
+ul {
+  list-style: none;
+}
+li {
+  line-height: 1.5;
+}

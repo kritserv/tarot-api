@@ -51,6 +51,10 @@ func main() {
 	router.HandleFunc("/api/v1", CardsIndex)
 	router.HandleFunc("/api/v1/cards/{name_short}", CardShow)
 	
+	staticFileDirectory := http.Dir("./static/")
+	staticFileHandler := http.StripPrefix("/static/", http.FileServer(staticFileDirectory))
+	router.PathPrefix("/static/").Handler(staticFileHandler).Methods("GET")
+	
 	log.Println("http://localhost:8080/")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
