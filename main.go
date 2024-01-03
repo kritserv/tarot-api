@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -50,6 +51,9 @@ func main() {
 	router.HandleFunc("/api/v1/cards", CardsIndex)
 	router.HandleFunc("/api/v1", CardsIndex)
 	router.HandleFunc("/api/v1/cards/{name_short}", CardShow)
+	router.HandleFunc("/api/v1/cards/search/q={q}", CardSearch)
+	router.HandleFunc("/api/v1/cards/search/meaning={meaning}", CardSearch)
+	router.HandleFunc("/api/v1/cards/search/meaning_rev={meaning_rev}", CardSearch)
 	
 	staticFileDirectory := http.Dir("./static/")
 	staticFileHandler := http.StripPrefix("/static/", http.FileServer(staticFileDirectory))
@@ -79,4 +83,29 @@ func CardShow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Error(w, "Card not found", http.StatusNotFound)
+}
+
+func CardSearch(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	meaning := strings.ToLower(vars["meaning"])
+	q := strings.ToLower(vars["q"])
+	meaning_rev := strings.ToLower(vars["meaning_rev"])
+
+	var results []Card
+
+	for _, card := range cards.Cards {
+		if meaning != "" && (strings.Contains(strings.ToLower(card.MeaningUp), meaning) || strings.Contains(strings.ToLower(card.MeaningRev), meaning)) {
+			results = append(results, card)
+		} else if q != "" && (strings.Contains(strings.ToLower(card.Name), q) || strings.Contains(strings.ToLower(card.MeaningRev), q)) {
+			results = append(results, card)
+		} else if meaning_rev != "" && strings.Contains(strings.ToLower(card.MeaningRev), meaning_rev) {
+			results = append(results, card)
+		}
+	}
+
+	if len(results) == 0 {
+		http.Error(w, "Card not found", http.StatusNotFound)
+	} else {
+		json.NewEncoder(w).Encode(results)
+	}
 }
