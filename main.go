@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"math/rand"
+	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -50,10 +53,15 @@ func main() {
 	router.HandleFunc("/", Index)
 	router.HandleFunc("/api/v1/cards", CardsIndex)
 	router.HandleFunc("/api/v1", CardsIndex)
+	router.HandleFunc("/api/v1/cards/random", func(w http.ResponseWriter, r *http.Request) {
+			r = mux.SetURLVars(r, map[string]string{"n": "1"})
+			RandomCards(w, r)
+		})
 	router.HandleFunc("/api/v1/cards/{name_short}", CardShow)
 	router.HandleFunc("/api/v1/cards/search/q={q}", CardSearch)
 	router.HandleFunc("/api/v1/cards/search/meaning={meaning}", CardSearch)
 	router.HandleFunc("/api/v1/cards/search/meaning_rev={meaning_rev}", CardSearch)
+	router.HandleFunc("/api/v1/cards/random/n={n:[0-9]+}", RandomCards)
 	
 	staticFileDirectory := http.Dir("./static/")
 	staticFileHandler := http.StripPrefix("/static/", http.FileServer(staticFileDirectory))
@@ -108,4 +116,20 @@ func CardSearch(w http.ResponseWriter, r *http.Request) {
 	} else {
 		json.NewEncoder(w).Encode(results)
 	}
+}
+
+func RandomCards(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	nStr := vars["n"]
+
+	n, err := strconv.Atoi(nStr)
+	if err != nil || n <= 0 || n > len(cards.Cards) {
+		http.Error(w, "Invalid value for n", http.StatusBadRequest)
+		return
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(cards.Cards), func(i, j int) { cards.Cards[i], cards.Cards[j] = cards.Cards[j], cards.Cards[i] })
+
+	json.NewEncoder(w).Encode(cards.Cards[:n])
 }
